@@ -1,7 +1,6 @@
 package dev.gabrielequa.corsiiscrizioniapi.service.impl;
 
 
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,19 +28,16 @@ public class CorsoServiceImpl implements CorsoService {
     @Override
     @Transactional(readOnly = true)
     public List<CorsoDTO> getAllCorsi(String titolo, String luogo) {
-        Specification<Corso> spec = (root, query, cb) -> cb.conjunction();
-        
-        if (titolo != null && !titolo.isBlank()) {
-            spec = spec.and((root, query, cb) -> 
-                cb.like(cb.lower(root.get("titolo")), "%" + titolo.toLowerCase() + "%"));
+        List<Corso> corsi;
+        if (titolo != null && !titolo.isEmpty() && luogo != null && !luogo.isEmpty()) {
+            corsi = corsoRepository.findByTitoloContainingAndLuogoContainingIgnoreCase(titolo, luogo);
+        } else if (titolo != null && !titolo.isEmpty()) {
+            corsi = corsoRepository.findByTitoloContainingIgnoreCase(titolo);
+        } else if (luogo != null && !luogo.isEmpty()) {
+            corsi = corsoRepository.findByLuogoContainingIgnoreCase(luogo);
+        } else {
+            corsi = corsoRepository.findAll();
         }
-        
-        if (luogo != null && !luogo.isBlank()) {
-            spec = spec.and((root, query, cb) -> 
-                cb.like(cb.lower(root.get("luogo")), "%" + luogo.toLowerCase() + "%"));
-        }
-        
-        List<Corso> corsi = corsoRepository.findAll(spec);
         return corsoMapper.toDTOList(corsi);
     }
     

@@ -1,7 +1,6 @@
 package dev.gabrielequa.corsiiscrizioniapi.service.impl;
 
 
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,19 +36,16 @@ public class IscrizioneServiceImpl implements IscrizioneService {
     @Override
     @Transactional(readOnly = true)
     public List<IscrizioneDTO> getAllIscrizioni(Long corsoId, String partecipanteEmail) {
-        Specification<Iscrizione> spec = (root, query, cb) -> cb.conjunction();
-        
-        if (corsoId != null) {
-            spec = spec.and((root, query, cb) -> 
-                cb.equal(root.get("corso").get("corsoId"), corsoId));
+        List<Iscrizione> iscrizioni;
+        if (corsoId != null && partecipanteEmail != null && !partecipanteEmail.isEmpty()) {
+            iscrizioni = iscrizioneRepository.findByCorso_CorsoIdAndPartecipanteEmailContainingIgnoreCase(corsoId, partecipanteEmail);
+        } else if (corsoId != null) {
+            iscrizioni = iscrizioneRepository.findByCorso_CorsoId(corsoId);
+        } else if (partecipanteEmail != null && !partecipanteEmail.isEmpty()) {
+            iscrizioni = iscrizioneRepository.findByPartecipanteEmailContainingIgnoreCase(partecipanteEmail);
+        } else {
+            iscrizioni = iscrizioneRepository.findAll();
         }
-        
-        if (partecipanteEmail != null && !partecipanteEmail.isBlank()) {
-            spec = spec.and((root, query, cb) -> 
-                cb.like(cb.lower(root.get("partecipanteEmail")), "%" + partecipanteEmail.toLowerCase() + "%"));
-        }
-        
-        List<Iscrizione> iscrizioni = iscrizioneRepository.findAll(spec);
         return iscrizioneMapper.toDTOList(iscrizioni);
     }
     

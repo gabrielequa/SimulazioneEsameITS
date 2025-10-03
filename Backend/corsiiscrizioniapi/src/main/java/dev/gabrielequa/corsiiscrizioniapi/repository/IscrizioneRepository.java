@@ -12,4 +12,6 @@ import java.util.List;
 public interface IscrizioneRepository extends JpaRepository<Iscrizione, Long>, JpaSpecificationExecutor<Iscrizione> {
     
     List<Iscrizione> findByCorso_CorsoId(Long corsoId);
+    List<Iscrizione> findByPartecipanteEmailContainingIgnoreCase(String partecipanteEmail);
+    List<Iscrizione> findByCorso_CorsoIdAndPartecipanteEmailContainingIgnoreCase(Long corsoId, String partecipanteEmail);
 }
