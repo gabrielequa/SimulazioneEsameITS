@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { formatDate } from "../utils/format";
-import { CreateEnrollmentForm } from "./CreateEnrollmentForm";
 import type { CorsoDTO } from "../types/types";
 import { api } from "../service/api";
 
@@ -8,27 +7,38 @@ export function EnrollmentPanel({
   corso,
   onClose,
   onToast,
+  onOpenEnrollmentModal,
   onResetSearch,
 }: {
   corso: CorsoDTO | null;
   onClose: () => void;
   onToast: (msg: string) => void;
+  onOpenEnrollmentModal: (corso: CorsoDTO) => void;
   onResetSearch?: () => void;
 }) {
   const [iscrizioni, setIscrizioni] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [emailFilter, setEmailFilter] = useState("");
-  const [showCreate, setShowCreate] = useState(false);
 
   useEffect(() => {
-    fetchList();
-    // Se viene aperto con un corso specifico, mostra automaticamente il form di creazione
-    if (corso) {
-      setShowCreate(true);
+    async function loadData() {
+      setLoading(true);
+      try {
+        const data = await api.fetchIscrizioni(
+          corso?.corsoId,
+          emailFilter || undefined
+        );
+        setIscrizioni(data || []);
+      } catch (err: unknown) {
+        onToast("Errore caricamento iscrizioni: " + (err instanceof Error ? err.message : String(err)));
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [corso]);
+    loadData();
+  }, [corso, emailFilter, onToast]);
 
-  async function fetchList() {
+  async function refreshList() {
     setLoading(true);
     try {
       const data = await api.fetchIscrizioni(
@@ -36,8 +46,8 @@ export function EnrollmentPanel({
         emailFilter || undefined
       );
       setIscrizioni(data || []);
-    } catch (err: any) {
-      onToast("Errore caricamento iscrizioni: " + (err.message || err));
+    } catch (err: unknown) {
+      onToast("Errore caricamento iscrizioni: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }
@@ -57,7 +67,7 @@ export function EnrollmentPanel({
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           {corso && (
-            <button className="btn" onClick={() => setShowCreate(true)}>
+            <button className="btn" onClick={() => onOpenEnrollmentModal(corso)}>
               Nuova iscrizione
             </button>
           )}
@@ -78,18 +88,18 @@ export function EnrollmentPanel({
           onChange={(e) => setEmailFilter(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              fetchList();
+              refreshList();
             }
           }}
         />
-        <button className="btn" onClick={fetchList}>
+        <button className="btn" onClick={refreshList}>
           Applica
         </button>
         <button
           className="btn ghost"
           onClick={async () => {
             setEmailFilter("");
-            await fetchList();
+            await refreshList();
             // Azzera anche i campi di ricerca nella lista corsi
             if (onResetSearch) {
               onResetSearch();
@@ -126,18 +136,6 @@ export function EnrollmentPanel({
         </div>
       ))}
 
-      {showCreate && corso && (
-        <CreateEnrollmentForm
-          corso={corso}
-          onClose={() => setShowCreate(false)}
-          onSuccess={async () => {
-            setShowCreate(false);
-            await fetchList();
-            onToast("Iscrizione creata con successo");
-          }}
-          onError={onToast}
-        />
-      )}
     </div>
   );
 }

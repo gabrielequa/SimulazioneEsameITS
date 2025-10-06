@@ -56,45 +56,44 @@ export function CreateEnrollmentForm({
   }
 
   return (
-    <div style={{ marginTop: 12 }}>
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>
-        Nuova iscrizione per: {corso.titolo}
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <label className="small">Nome</label>
+        <input
+          className="input"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Inserisci il nome"
+        />
       </div>
-      <div className="form-row">
-        <div style={{ flex: 1 }}>
-          <label className="small">Nome</label>
-          <input
-            className="input"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-        </div>
-        <div style={{ flex: 1 }}>
-          <label className="small">Cognome</label>
-          <input
-            className="input"
-            value={cognome}
-            onChange={(e) => setCognome(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-        </div>
+      <div style={{ marginBottom: 16 }}>
+        <label className="small">Cognome</label>
+        <input
+          className="input"
+          value={cognome}
+          onChange={(e) => setCognome(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Inserisci il cognome"
+        />
       </div>
-      <div style={{ marginBottom: 8 }}>
+      <div style={{ marginBottom: 16 }}>
         <label className="small">Email</label>
         <input
           className="input"
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={handleKeyDown}
+          placeholder="Inserisci l'email"
         />
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button className="btn" onClick={submit} disabled={saving}>
-          {saving ? "Salvataggio..." : "Salva"}
-        </button>
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <button className="btn ghost" onClick={onClose}>
           Annulla
+        </button>
+        <button className="btn" onClick={submit} disabled={saving}>
+          {saving ? "Salvataggio..." : "Conferma iscrizione"}
         </button>
       </div>
     </div>

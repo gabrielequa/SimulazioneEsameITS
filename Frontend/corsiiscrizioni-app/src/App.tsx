@@ -4,6 +4,8 @@ import { CourseList } from "./components/CourseList";
 import type { CourseListRef } from "./components/CourseList";
 import { EnrollmentPanel } from "./components/EnrollmentPanel";
 import { Toast } from "./components/Toast";
+import { Modal } from "./components/Modal";
+import { CreateEnrollmentForm } from "./components/CreateEnrollmentForm";
 import { api } from "./service/api";
 import type { CorsoDTO } from "./types/types";
 
@@ -11,7 +13,10 @@ export default function App() {
   const [corsi, setCorsi] = useState<CorsoDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<CorsoDTO | null>(null);
-  const [showEnrollments, setShowEnrollments] = useState(false);
+          const [showEnrollments, setShowEnrollments] = useState(false);
+  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+  const [courseForEnrollment, setCourseForEnrollment] = useState<CorsoDTO | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
   const courseListRef = useRef<CourseListRef>(null);
 
@@ -49,8 +54,8 @@ export default function App() {
             setShowEnrollments(true);
           }}
           onSelectCourse={(c) => {
-            setSelectedCourse(c);
-            setShowEnrollments(true);
+            setCourseForEnrollment(c);
+            setShowEnrollmentModal(true);
           }}
         />
 
@@ -58,8 +63,13 @@ export default function App() {
           {showEnrollments ? (
             <EnrollmentPanel
               corso={selectedCourse}
+              key={`${selectedCourse?.corsoId}-${refreshTrigger}`}
               onClose={() => setShowEnrollments(false)}
               onToast={(m) => setToast(m)}
+              onOpenEnrollmentModal={(corso) => {
+                setCourseForEnrollment(corso);
+                setShowEnrollmentModal(true);
+              }}
               onResetSearch={() => {
                 courseListRef.current?.resetFields();
               }}
@@ -85,6 +95,29 @@ export default function App() {
         </div>
       </div>
       {toast && <Toast message={toast} />}
+      
+      {/* Modal di iscrizione */}
+      <Modal
+        isOpen={showEnrollmentModal && !!courseForEnrollment}
+        onClose={() => setShowEnrollmentModal(false)}
+        title={`Nuova iscrizione - ${courseForEnrollment?.titolo || ''}`}
+      >
+        {courseForEnrollment && (
+          <CreateEnrollmentForm
+            corso={courseForEnrollment}
+            onClose={() => setShowEnrollmentModal(false)}
+            onSuccess={async () => {
+              setShowEnrollmentModal(false);
+              setToast("Iscrizione creata con successo");
+              // Forza il refresh del pannello iscrizioni se è dello stesso corso
+              if (selectedCourse?.corsoId === courseForEnrollment.corsoId && showEnrollments) {
+                setRefreshTrigger(prev => prev + 1);
+              }
+            }}
+            onError={(msg) => setToast(msg)}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

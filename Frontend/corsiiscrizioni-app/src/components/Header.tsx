@@ -1,6 +1,4 @@
-import React from "react";
-
-export function Header({ onRefresh }: { onRefresh: () => void }) {
+export function Header() {
   return (
     <header className="header">
       <div className="brand">
@@ -11,11 +9,6 @@ export function Header({ onRefresh }: { onRefresh: () => void }) {
             Pannello di gestione
           </div>
         </div>
-      </div>
-      <div className="controls">
-        <button className="btn" onClick={onRefresh}>
-          Aggiorna
-        </button>
       </div>
     </header>
   );
