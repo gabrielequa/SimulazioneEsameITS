@@ -76,6 +76,10 @@ public class IscrizioneController {
         @ApiResponse(
             responseCode = "404",
             description = "Corso non trovato"
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Email già utilizzata per questo corso"
         )
     })
     public ResponseEntity<IscrizioneDTO> createIscrizione(

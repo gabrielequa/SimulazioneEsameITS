@@ -14,4 +14,9 @@ public interface IscrizioneRepository extends JpaRepository<Iscrizione, Long>, J
     List<Iscrizione> findByCorso_CorsoId(Long corsoId);
     List<Iscrizione> findByPartecipanteEmailContainingIgnoreCase(String partecipanteEmail);
     List<Iscrizione> findByCorso_CorsoIdAndPartecipanteEmailContainingIgnoreCase(Long corsoId, String partecipanteEmail);
+    
+    /**
+     * Verifica se esiste già un'iscrizione per il corso specificato con l'email fornita
+     */
+    boolean existsByCorso_CorsoIdAndPartecipanteEmail(Long corsoId, String partecipanteEmail);
 }

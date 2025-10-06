@@ -13,6 +13,7 @@ import dev.gabrielequa.corsiiscrizioniapi.repository.IscrizioneRepository;
 import dev.gabrielequa.corsiiscrizioniapi.service.CorsoService;
 import dev.gabrielequa.corsiiscrizioniapi.service.IscrizioneService;
 import dev.gabrielequa.corsiiscrizioniapi.exception.ResourceNotFoundException;
+import dev.gabrielequa.corsiiscrizioniapi.exception.EmailAlreadyExistsException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,6 +56,14 @@ public class IscrizioneServiceImpl implements IscrizioneService {
         // Verifica esistenza corso e disponibilità
         Corso corso = corsoRepository.findById(request.getCorsoId())
             .orElseThrow(() -> new ResourceNotFoundException("Corso non trovato con ID: " + request.getCorsoId()));
+        
+        // Verifica se l'email è già utilizzata per questo corso
+        if (iscrizioneRepository.existsByCorso_CorsoIdAndPartecipanteEmail(
+                request.getCorsoId(), request.getPartecipanteEmail())) {
+            throw new EmailAlreadyExistsException(
+                "Un partecipante con email '" + request.getPartecipanteEmail() + 
+                "' è già iscritto al corso con ID: " + request.getCorsoId());
+        }
         
         // Riduce la disponibilità del corso
         corsoService.riduciDisponibilita(request.getCorsoId());
